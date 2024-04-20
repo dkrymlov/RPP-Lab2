@@ -60,6 +60,18 @@ void parallelSearch(const char* text, const char* pattern, int textLength, int p
             if (flag && index <= i) {
                 break;
             }
+            if (rank == 0)
+            {
+                for (int num = 1; num < size; num++){
+                    MPI_Send(text, textLength, MPI_CHAR, num, 1, MPI_COMM_WORLD);
+                }
+            } else{
+                MPI_Status status;
+                char* rec_buf;
+                rec_buf = (char *) malloc(textLength+1);
+                MPI_Recv(rec_buf, textLength, MPI_CHAR, 0, 1, MPI_COMM_WORLD,&status);
+                text = rec_buf;
+            }
         }
     }
     for (int num = 0; num < size; num++){
@@ -110,10 +122,10 @@ void findSubstring(const char* text, const char* pattern, int textLength, int pa
 
 
 int main(int argc, char **argv) {
-    int textLength = 1000000;
+    int textLength = 10000;
     char text[textLength];
     generateRandomString(text, textLength);
-    int patternLength = 3;
+    int patternLength = 4;
     const char pattern[] = "HaaH";
     int rank, size;
     MPI_Init(&argc, &argv);
